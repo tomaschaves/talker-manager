@@ -104,6 +104,13 @@ const validateRate = (req, res, next) => {
   next();
 };
 
+const turnToObject = (id, name, age, talk) => ({
+    id: Number(id),
+    name,
+    age,
+    talk,
+});
+
 module.exports = {
   validateEmail,
   validatePassword,
@@ -112,4 +119,5 @@ module.exports = {
   validateAge,
   validateTalk,
   validateWatched,
-  validateRate };
+  validateRate,
+  turnToObject };

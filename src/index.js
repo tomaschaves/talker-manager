@@ -18,6 +18,7 @@ const {
   validateTalk,
   validateWatched,
   validateRate,
+  turnToObject,
 } = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -84,34 +85,22 @@ app.post('/talker', validateToken, validateName, validateAge,
   return res.status(201).json(newPerson);
 });
 
-
 app.put('/talker/:id', validateToken, validateName, validateAge,
   validateTalk, validateWatched, validateRate, async (req, res) => {
     const readTalkers = await fs.readFile(joinPath, 'utf-8');
     const responseTalkers = await JSON.parse(readTalkers);
     const { id } = req.params;
     
-    const { name, age, talk: { watchedAt, rate } } = req.body;
+    const { name, age, talk } = req.body;
     const hasId = responseTalkers.some((talker) => talker.id === Number(id));
     
     if (!hasId) {
-      return res.status(404).json({message: "Pessoa palestrante não encontrada"});
+      return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
     }
     const talkerIndex = responseTalkers.findIndex((talker) => talker.id === Number(id));
     
-  
-    const alteredPerson = {
-      id: Number(id),
-      name,
-      age,
-      talk: {
-        watchedAt,
-        rate,
-      },
-    };
-    
-    responseTalkers[talkerIndex] = alteredPerson;
+    responseTalkers[talkerIndex] = turnToObject(id, name, age, talk);
 
-    await fs.writeFile(joinPath, JSON.stringify(responseTalkers))
-    return res.status(200).json(alteredPerson);
+    await fs.writeFile(joinPath, JSON.stringify(responseTalkers));
+    return res.status(200).json(turnToObject(id, name, age, talk));
   });
