@@ -101,7 +101,6 @@ const validateRate = (req, res, next) => {
     const text = 'O campo "rate" deve ser um número inteiro entre 1 e 5';
     return res.status(400).json({ message: text });
   }
-  // || typeof rate !== 'number'  ver se vamos precisar dessa linha no if abaixo
   next();
 };
 
