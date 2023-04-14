@@ -9,7 +9,16 @@ const HTTP_OK_STATUS = 200;
 const PORT = process.env.PORT || '3001';
 
 const crypto = require('crypto');
-const { validateEmail, validatePassword } = require('./helpers');
+const { 
+  validateEmail,
+  validatePassword,
+  validateToken,
+  validateName,
+  validateAge,
+  validateTalk,
+  validateWatched,
+  validateRate,
+} = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -54,18 +63,23 @@ app.post('/login', validateEmail, validatePassword, async (_req, res) => {
   return res.status(200).json(tokenResponse);
 });
 
-// app.post('/talker', async (req, res) => {
-//   const readTalkers = await fs.readFile(joinPath, 'utf-8');
-//   const responseTalkers = await JSON.parse(readTalkers);
+app.post('/talker', validateToken, validateName, validateAge,
+  validateTalk, validateWatched, validateRate, async (req, res) => {
+  const readTalkers = await fs.readFile(joinPath, 'utf-8');
+  const responseTalkers = await JSON.parse(readTalkers);
+  const { name, age, talk: { watchedAt, rate } } = req.body;
+  const id = responseTalkers[responseTalkers.length - 1].id + 1;
+  const newPerson = {
+    id,
+    name,
+    age,
+    talk: {
+      watchedAt,
+      rate,
+    },
+  };
+  responseTalkers.push(newPerson);
+  await fs.writeFile(joinPath, JSON.stringify(responseTalkers));
 
-//   console.log(responseTalkers);
-// });
-
-// {
-//   "name": "Danielle Santos",
-//   "age": 56,
-//   "talk": {
-//     "watchedAt": "22/10/2019",
-//     "rate": 5
-//   }
-// }
+  return res.status(201).json(newPerson);
+});
