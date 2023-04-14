@@ -9,6 +9,7 @@ const HTTP_OK_STATUS = 200;
 const PORT = process.env.PORT || '3001';
 
 const crypto = require('crypto');
+const { validateEmail } = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -19,12 +20,10 @@ app.listen(PORT, () => {
   console.log('Online');
 });
 
-
-const path = '/talker.json'
+const path = '/talker.json';
 const joinPath = join(__dirname, path);
 
-
-app.get('/talker', async(req, res) => {
+app.get('/talker', async (req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
   if (responseTalkers.length === 0) {
@@ -32,9 +31,9 @@ app.get('/talker', async(req, res) => {
   }
   
   return res.status(200).json(responseTalkers);
-})
+});
 
-app.get('/talker/:id', async(req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
   const { id } = req.params;
@@ -42,44 +41,35 @@ app.get('/talker/:id', async(req, res) => {
   const searchPerson = responseTalkers.find((talker) => talker.id === +id);
 
   if (!searchPerson) {
-    return res.status(404).json({ "message": "Pessoa palestrante não encontrada" });
+    return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
   }
   
   return res.status(200).json(searchPerson);
-})
+});
 
-
-app.post('/login', /* middleWareDeEmail,  */ async(req, res) => {
+app.post('/login', validateEmail, async (req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
-  const responseTalkers = await JSON.parse(readTalkers);
   const { email, password } = req.body;
 
   const token = crypto.randomBytes(16).toString('base64').slice(0, 16);
-  const tokenResponse = { "token": token }
-
-  // console.log(password.length);
-  const regexEmail = /\S+@\S+\.\S+/;
-  const validateEmail = regexEmail.test(email);
-  // o middleware tem acesso à requisição, então não preciso passar parâmetro. o middleware está antes de chegarmos até à função/endpoint de login, então ele não precisa constar no corpo do endpoint em si. colocando next(), ele vai para o próximo, caso houver, sendo especificado logo em seguida a ele na primeira linha. export e importo normalmente como uma função
-  if(email === undefined) {
-    return res.status(400).json( { message: "O campo \"email\" é obrigatório" } );
-  }
-
-  if(!validateEmail) {
-    return res.status(400).json( { message: "O \"email\" deve ter o formato \"email@email.com\"" } );
-  }
-  
-  
-  if(password === undefined) {
-    return res.status(400).json( { message: "O campo \"password\" é obrigatório" } );
-  }
-
-  if(password.length < 6) {
-    return res.status(400).json( { message: "O \"password\" deve ter pelo menos 6 caracteres" } );
-  }
+  const tokenResponse = { token };
 
   return res.status(200).json(tokenResponse);
+});
+
+app.post('/talker', async(req, res) => {
+  const readTalkers = await fs.readFile(joinPath, 'utf-8');
+  const responseTalkers = await JSON.parse(readTalkers);
+
+  console.log(responseTalkers);
 
 })
 
-
+// {
+//   "name": "Danielle Santos",
+//   "age": 56,
+//   "talk": {
+//     "watchedAt": "22/10/2019",
+//     "rate": 5
+//   }
+// }
