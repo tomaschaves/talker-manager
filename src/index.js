@@ -53,27 +53,32 @@ app.post('/login', /* middleWareDeEmail,  */ async(req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
   const { email, password } = req.body;
-  
-
 
   const token = crypto.randomBytes(16).toString('base64').slice(0, 16);
-  
   const tokenResponse = { "token": token }
 
-  return res.status(200).json(tokenResponse);
-  
-  // const regexEmail = /\S+@\S+\.\S+/;
-  // const validateEmail = regexEmail.test(email);
-  // const emailLength = email.length > 0;
-  // const passwordLength = password.length >= 6;
-
+  // console.log(password.length);
+  const regexEmail = /\S+@\S+\.\S+/;
+  const validateEmail = regexEmail.test(email);
   // o middleware tem acesso à requisição, então não preciso passar parâmetro. o middleware está antes de chegarmos até à função/endpoint de login, então ele não precisa constar no corpo do endpoint em si. colocando next(), ele vai para o próximo, caso houver, sendo especificado logo em seguida a ele na primeira linha. export e importo normalmente como uma função
+  if(email === undefined) {
+    return res.status(400).json( { message: "O campo \"email\" é obrigatório" } );
+  }
+
+  if(!validateEmail) {
+    return res.status(400).json( { message: "O \"email\" deve ter o formato \"email@email.com\"" } );
+  }
   
-  // console.log(validateEmail && emailLength && passwordLength);
+  
+  if(password === undefined) {
+    return res.status(400).json( { message: "O campo \"password\" é obrigatório" } );
+  }
 
+  if(password.length < 6) {
+    return res.status(400).json( { message: "O \"password\" deve ter pelo menos 6 caracteres" } );
+  }
 
-  // if(email.length > )
-
+  return res.status(200).json(tokenResponse);
 
 })
 
