@@ -104,3 +104,17 @@ app.put('/talker/:id', validateToken, validateName, validateAge,
     await fs.writeFile(joinPath, JSON.stringify(responseTalkers));
     return res.status(200).json(turnToObject(id, name, age, talk));
   });
+
+  app.delete('/talker/:id', validateToken, async (req, res) => {
+    const readTalkers = await fs.readFile(joinPath, 'utf-8');
+    const responseTalkers = await JSON.parse(readTalkers);
+    const { id } = req.params;
+    console.log(typeof id);
+    const personToDelete = responseTalkers.some((talker) => talker.id === Number(id));
+    if (!personToDelete) return { message: 'Pessoa não encontrada' };
+    
+    const newResponseTalkers = responseTalkers.filter((talker) => talker.id !== Number(id));
+  
+    await fs.writeFile(joinPath, JSON.stringify(newResponseTalkers));
+    return res.status(204).end();
+  });
