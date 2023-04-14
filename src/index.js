@@ -9,7 +9,7 @@ const HTTP_OK_STATUS = 200;
 const PORT = process.env.PORT || '3001';
 
 const crypto = require('crypto');
-const { validateEmail } = require('./helpers');
+const { validateEmail, validatePassword } = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -23,7 +23,7 @@ app.listen(PORT, () => {
 const path = '/talker.json';
 const joinPath = join(__dirname, path);
 
-app.get('/talker', async (req, res) => {
+app.get('/talker', async (_req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
   if (responseTalkers.length === 0) {
@@ -47,23 +47,19 @@ app.get('/talker/:id', async (req, res) => {
   return res.status(200).json(searchPerson);
 });
 
-app.post('/login', validateEmail, async (req, res) => {
-  const readTalkers = await fs.readFile(joinPath, 'utf-8');
-  const { email, password } = req.body;
-
+app.post('/login', validateEmail, validatePassword, async (_req, res) => {
   const token = crypto.randomBytes(16).toString('base64').slice(0, 16);
   const tokenResponse = { token };
 
   return res.status(200).json(tokenResponse);
 });
 
-app.post('/talker', async(req, res) => {
-  const readTalkers = await fs.readFile(joinPath, 'utf-8');
-  const responseTalkers = await JSON.parse(readTalkers);
+// app.post('/talker', async (req, res) => {
+//   const readTalkers = await fs.readFile(joinPath, 'utf-8');
+//   const responseTalkers = await JSON.parse(readTalkers);
 
-  console.log(responseTalkers);
-
-})
+//   console.log(responseTalkers);
+// });
 
 // {
 //   "name": "Danielle Santos",
