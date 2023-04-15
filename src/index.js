@@ -33,13 +33,14 @@ app.listen(PORT, () => {
 const path = '/talker.json';
 const joinPath = join(__dirname, path);
 
-app.get('/talker/search', validateToken, async(req, res) => {
+app.get('/talker/search', validateToken, async (req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
   const { q } = req.query;
   console.log(q);
   
-  const filteredTalkers = responseTalkers.filter((talker) => talker.name.toLowerCase().includes(q.toLowerCase()));
+  const filteredTalkers = responseTalkers
+    .filter((talker) => talker.name.toLowerCase().includes(q.toLowerCase()));
   
   return res.status(200).json(filteredTalkers);
 });
@@ -129,4 +130,3 @@ app.delete('/talker/:id', validateToken, async (req, res) => {
   await fs.writeFile(joinPath, JSON.stringify(newResponseTalkers));
   return res.status(204).end();
 });
-  
