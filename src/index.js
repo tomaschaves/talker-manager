@@ -21,6 +21,7 @@ const {
   turnToObject,
   validateRateQuery,
   validateDateQuery,
+  validateOnlyRate,
 } = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -65,6 +66,26 @@ app.get('/talker/search', validateToken, validateRateQuery, validateDateQuery, a
 
   return res.status(200).json(filteredData);
 });
+
+app.patch('/talker/rate/:id', validateToken, validateOnlyRate, async(req, res) => {
+  const readTalkers = await fs.readFile(joinPath, 'utf-8');
+  const responseTalkers = await JSON.parse(readTalkers);
+
+  const { rate } = req.body;
+  const { id } = req.params;
+  const existingTalker = responseTalkers.find((talker) => talker.id === Number(id));
+  const existingTalkerIndex = responseTalkers.findIndex((talker) => talker.id === Number(id));
+  const { name, age, talk: { watchedAt } } = existingTalker;
+  console.log('existingTalker: ', existingTalker);
+  
+  const alteredTalker = { id:Number(id), name, age, talk: { watchedAt, rate }};
+  console.log('alteredTalker: ', alteredTalker);
+  
+  responseTalkers[existingTalkerIndex] = alteredTalker;
+  
+  await fs.writeFile(joinPath, JSON.stringify(responseTalkers));
+  return res.status(204).end(); 
+})
 
 app.get('/talker/:id', async (req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');

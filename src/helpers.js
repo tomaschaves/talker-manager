@@ -133,6 +133,20 @@ const validateDateQuery = (req, res, next) => {
   next();
 };
 
+const validateOnlyRate = (req, res, next) => {
+  const { rate } = req.body;
+  
+  if (rate === undefined) {
+    return res.status(400).json({ message: 'O campo "rate" é obrigatório' });
+  }
+  
+  if (rate <= 0 || rate > 5 || !Number.isInteger(rate)) {
+    const text = 'O campo "rate" deve ser um número inteiro entre 1 e 5';
+    return res.status(400).json({ message: text });
+  }
+  next();
+};
+
 module.exports = {
   validateEmail,
   validatePassword,
@@ -145,4 +159,5 @@ module.exports = {
   turnToObject,
   validateRateQuery,
   validateDateQuery,
+  validateOnlyRate,
  };
