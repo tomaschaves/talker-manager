@@ -111,6 +111,28 @@ const turnToObject = (id, name, age, talk) => ({
     talk,
 });
 
+const validateRateQuery = (req, res, next) => {
+  const { rate } = req.query;
+  const rateNumber = Number(rate);
+
+  if (rate && (rateNumber < 1 || rateNumber > 5 || !Number.isInteger(rateNumber))) {
+    const text = 'O campo "rate" deve ser um número inteiro entre 1 e 5';
+    return res.status(400).json({ message: text });
+  }
+  next();
+};
+
+const validateDateQuery = (req, res, next) => {
+  const { date } = req.query;
+  const dateType = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
+
+  if (date && !dateType.test(date)) {
+    return res.status(400).json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
+  }
+
+  next();
+};
+
 module.exports = {
   validateEmail,
   validatePassword,
@@ -120,4 +142,7 @@ module.exports = {
   validateTalk,
   validateWatched,
   validateRate,
-  turnToObject };
+  turnToObject,
+  validateRateQuery,
+  validateDateQuery,
+ };

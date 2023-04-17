@@ -19,6 +19,8 @@ const {
   validateWatched,
   validateRate,
   turnToObject,
+  validateRateQuery,
+  validateDateQuery,
 } = require('./helpers');
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -33,18 +35,6 @@ app.listen(PORT, () => {
 const path = '/talker.json';
 const joinPath = join(__dirname, path);
 
-app.get('/talker/search', validateToken, async (req, res) => {
-  const readTalkers = await fs.readFile(joinPath, 'utf-8');
-  const responseTalkers = await JSON.parse(readTalkers);
-  const { q } = req.query;
-  console.log(q);
-  
-  const filteredTalkers = responseTalkers
-    .filter((talker) => talker.name.toLowerCase().includes(q.toLowerCase()));
-  
-  return res.status(200).json(filteredTalkers);
-});
-
 app.get('/talker', async (_req, res) => {
   const readTalkers = await fs.readFile(joinPath, 'utf-8');
   const responseTalkers = await JSON.parse(readTalkers);
@@ -53,6 +43,27 @@ app.get('/talker', async (_req, res) => {
   }
   
   return res.status(200).json(responseTalkers);
+});
+
+app.get('/talker/search', validateToken, validateRateQuery, validateDateQuery, async (req, res) => {
+  const readTalkers = await fs.readFile(joinPath, 'utf-8');
+  const responseTalkers = await JSON.parse(readTalkers);
+
+  const { q, rate, date } = req.query;
+
+  let filteredData = responseTalkers;
+  if (q) {
+    filteredData = responseTalkers
+      .filter((talker) => talker.name.toLowerCase().includes(q.toLowerCase()));
+  }
+  if (rate) {
+    filteredData = filteredData.filter((talker) => talker.talk.rate === Number(rate));
+  }
+  if (date) {
+    filteredData = filteredData.filter((talker) => talker.talk.watchedAt === date);
+  }
+
+  return res.status(200).json(filteredData);
 });
 
 app.get('/talker/:id', async (req, res) => {
